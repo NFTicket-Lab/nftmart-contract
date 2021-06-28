@@ -47,12 +47,24 @@ impl Environment for CustomEnvironment {
 pub trait NFTMart {
     type ErrorCode = NFTMartErr;
 
+    /// Runtime generates a random number, which is based on the latest 81 block hash value, which can be used in some low-security occasions.
     #[ink(extension = 2001, returns_result = false)]
     fn fetch_random() -> [u8; 32];
 
+    /// Create an NFT portfolio, which is a collection used by creators to distinguish different NFT works
+    ///     metadata: metadata of the class
+    ///     name: the name of the class
+    ///     description: description of the class
+    ///     properties: properties of the class
     #[ink(extension = 2002, returns_result = false)]
     fn create_class(metadata: Metadata, name: Chars, description: Chars, properties: u8) -> (ink_env::AccountId, ClassId);
 
+    /// Create an NFT
+    ///     to: Who is the created work for?
+    ///     class_id: The class to which the work belongs
+    ///     metadata: metadata of the work
+    ///     quantity: How many works are created with the same data?
+    ///     charg_royalty: Whether to charge royalties    
     #[ink(extension = 2003, returns_result = false)]
     fn proxy_mint(
         to: &ink_env::AccountId,
@@ -62,9 +74,17 @@ pub trait NFTMart {
         charge_royalty: Option<bool>,
     ) -> (ink_env::AccountId, ink_env::AccountId, ClassId, TokenId, Quantity);
 
+    /// Transfer NFT to another account
+    ///     to: The target account of the transfer
+    ///     class_id: the class of the transferred NFT
+    ///     token_id: The ID of the NFT being transferred
+    ///     quantity: the number of transfers
     #[ink(extension = 2004, returns_result = false)]
     fn transfer(to: &ink_env::AccountId, class_id: ClassId, token_id: TokenId, quantity: Quantity) -> ();
 
+    /// Return the information of the specified NFT, including the holder
+    ///     class_id: the class of the queried NFT
+    ///     token_id: the id of the NFT being queried
     #[ink(extension = 1001, handle_status = false, returns_result = false)]
     fn tokens(class_id: ClassId, token_id: TokenId) -> Option<ContractTokenInfo<
         Metadata, Quantity, Balance, BlockNumber, ink_env::AccountId,
