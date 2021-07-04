@@ -44,12 +44,39 @@ mod contract_demo {
         #[ink(message)]
         pub fn create_class(
             &mut self,
+            creator: AccountId,
             metadata: Metadata,
             name: Chars,
             description: Chars,
             properties: u8,
         ) -> Result<(), NFTMartErr> {
-            let (owner, class_id) = self.env().extension().create_class(metadata, name, description, properties)?;
+            let (owner, class_id) = self.env().extension().create_class(&creator, metadata, name, description, properties)?;
+            self.env().emit_event(CreateClassFromContract { owner, class_id });
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn create_class_by_caller(
+            &mut self,
+            metadata: Metadata,
+            name: Chars,
+            description: Chars,
+            properties: u8,
+        ) -> Result<(), NFTMartErr> {
+            let (owner, class_id) = self.env().extension().create_class_by_caller(metadata, name, description, properties)?;
+            self.env().emit_event(CreateClassFromContract { owner, class_id });
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn create_class_by_contract(
+            &mut self,
+            metadata: Metadata,
+            name: Chars,
+            description: Chars,
+            properties: u8,
+        ) -> Result<(), NFTMartErr> {
+            let (owner, class_id) = self.env().extension().create_class_by_contract(metadata, name, description, properties)?;
             self.env().emit_event(CreateClassFromContract { owner, class_id });
             Ok(())
         }
@@ -57,13 +84,54 @@ mod contract_demo {
         #[ink(message)]
         pub fn mint_nft(
             &mut self,
+            creator: AccountId,
+            to: AccountId,
             class_id: ClassId,
             metadata: Metadata,
             quantity: Quantity,
             charge_royalty: Option<bool>,
         ) -> Result<(), NFTMartErr> {
             let (_class_owner, _beneficiary, _class_id, _token_id, _quantity) = self.env().extension().proxy_mint(
-                &self.env().caller(),
+                &creator,
+                &to,
+                class_id,
+                metadata,
+                quantity,
+                charge_royalty,
+            )?;
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn mint_nft_by_caller(
+            &mut self,
+            to: AccountId,
+            class_id: ClassId,
+            metadata: Metadata,
+            quantity: Quantity,
+            charge_royalty: Option<bool>,
+        ) -> Result<(), NFTMartErr> {
+            let (_class_owner, _beneficiary, _class_id, _token_id, _quantity) = self.env().extension().proxy_mint_by_caller(
+                &to,
+                class_id,
+                metadata,
+                quantity,
+                charge_royalty,
+            )?;
+            Ok(())
+        }
+
+        #[ink(message)]
+        pub fn mint_nft_by_contract(
+            &mut self,
+            to: AccountId,
+            class_id: ClassId,
+            metadata: Metadata,
+            quantity: Quantity,
+            charge_royalty: Option<bool>,
+        ) -> Result<(), NFTMartErr> {
+            let (_class_owner, _beneficiary, _class_id, _token_id, _quantity) = self.env().extension().proxy_mint_by_contract(
+                &to,
                 class_id,
                 metadata,
                 quantity,
